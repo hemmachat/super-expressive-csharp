@@ -5,11 +5,20 @@ using System.Text.RegularExpressions;
 
 namespace SuperExpressive
 {
+    public enum GroupType
+    {
+        AnyOf,
+        Capture,
+        Group
+    }
+    
     public class SuperExpressive
     {
         private const string SpecialChars = @"\.^$|?*+()[]{}-";
         private readonly StringBuilder _pattern = new StringBuilder();
-        private readonly Stack _stack = new Stack();
+        private readonly Stack _groupStack = new Stack();
+        private readonly Stack _patternStack = new Stack();
+        private bool _isGroup;
 
         public static string ReplaceSpecialChars(char charToReplace)
         {
@@ -26,26 +35,6 @@ namespace SuperExpressive
         public string ToRegexString() 
         {
             return _pattern.ToString();
-        }
-
-        /// <summary>
-        /// Assert the start of input, or the start of a line when .lineByLine is used.
-        /// </summary>
-        /// <returns></returns>
-        public SuperExpressive StartOfInput()
-        {
-            _pattern.Append('^');
-            return this;
-        }
-
-        /// <summary>
-        /// Assert the end of input, or the end of a line when .lineByLine is used.
-        /// </summary>
-        /// <returns></returns>
-        public SuperExpressive EndOfInput()
-        {
-            _pattern.Append('$');
-            return this;
         }
 
         /// <summary>
@@ -68,22 +57,70 @@ namespace SuperExpressive
         }
         
         /// <summary>
-        /// Signifies the end of a SuperExpressive grouping, such as .anyOf, .group, or .capture.
-        /// </summary>
-        /// <returns></returns>
-        public SuperExpressive End()
-        {
-            _pattern.Append(')');
-            return this;
-        }
-
-        /// <summary>
         /// Matches a choice between specified elements. Needs to be finalised with .end().
         /// </summary>
         /// <returns></returns>
         public SuperExpressive AnyOf()
         {
-            _pattern.Append('(');
+            _groupStack.Push(GroupType.AnyOf);
+            _patternStack.Push(new StringBuilder());
+            _isGroup = true;
+
+            return this;
+        }
+        
+        /// <summary>
+        /// Signifies the end of a SuperExpressive grouping, such as .anyOf, .group, or .capture.
+        /// </summary>
+        /// <returns></returns>
+        public SuperExpressive End()
+        {
+            if (_groupStack.Count > 0 && _patternStack.Count > 0)
+            {
+                var groupType = (GroupType) _groupStack.Pop();
+            
+                switch (groupType)
+                {
+                    case GroupType.Capture:
+                        break;
+                
+                    case GroupType.AnyOf:
+                        _pattern.Append('[');
+                        var groupPattern = (StringBuilder) _patternStack.Pop();
+                        _pattern.Append(groupPattern);
+                        _pattern.Append(']');
+                        break;
+                
+                    case GroupType.Group:
+                        break;
+                
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }   
+            }
+
+            _isGroup = false;
+            
+            return this;
+        }
+
+        /// <summary>
+        /// Assert the start of input, or the start of a line when .lineByLine is used.
+        /// </summary>
+        /// <returns></returns>
+        public SuperExpressive StartOfInput()
+        {
+            _pattern.Append('^');
+            return this;
+        }
+
+        /// <summary>
+        /// Assert the end of input, or the end of a line when .lineByLine is used.
+        /// </summary>
+        /// <returns></returns>
+        public SuperExpressive EndOfInput()
+        {
+            _pattern.Append('$');
             return this;
         }
 
@@ -224,19 +261,37 @@ namespace SuperExpressive
         /// <returns></returns>
         public SuperExpressive String(string stringToMatch) 
         {
-            _pattern.Append(stringToMatch);
+            UpdatePattern(stringToMatch);
+            
             return this;
         }   
 
         public SuperExpressive Char(char charToMatch)
         {
-            _pattern.Append(ReplaceSpecialChars(charToMatch));
+            var stringPattern = ReplaceSpecialChars(charToMatch);
+            UpdatePattern(stringPattern);
+            
             return this;
-        }     
+        }
 
+        private void UpdatePattern(string stringPattern)
+        {
+            if (_isGroup)
+            {
+                var pattern = (StringBuilder) _patternStack.Peek();
+                pattern?.Append(stringPattern);
+            }
+            else
+            {
+                _pattern.Append(stringPattern);
+            }
+        }
+        
         public SuperExpressive Range(char beginChar, char endChar)
         {
-            _pattern.Append($"{beginChar}-{endChar}");
+            var stringPattern = $"{beginChar}-{endChar}";
+            UpdatePattern(stringPattern);
+
             return this;
         }
 

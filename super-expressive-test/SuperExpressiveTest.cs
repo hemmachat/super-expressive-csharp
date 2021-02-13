@@ -322,5 +322,35 @@ namespace SuperExpressive.Test
 
             Assert.Equal("{4,6}?", builder.ToRegexString());
         }
+
+        [Fact]
+        public void Any_Of_Basic()
+        {
+            var builder = new SuperExpressive()
+                .AnyOf()
+                .String("hello")
+                .Digit()
+                .Word()
+                .Char('.')
+                .Char('#')
+                .End();
+            
+            Assert.Equal(@"(?:hello|\d|\w|[\.#])", builder.ToRegexString());
+        }
+        
+        [Fact]
+        public void Any_Of_Range_Fusion()
+        {
+            var builder = new SuperExpressive()
+                .AnyOf()
+                .Range('a', 'z')
+                .Range('A', 'Z')
+                .Range('0', '9')
+                .Char('.')
+                .Char('#')
+                .End();
+            
+            Assert.Equal(@"[a-zA-Z0-9\.#]", builder.ToRegexString());
+        }
     }
 }
