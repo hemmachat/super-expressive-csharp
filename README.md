@@ -1,4 +1,7 @@
 # Super Expressive C#
+
+This work is still in progress...
+
 **Super Expressive C#** is a .NET library written in C# that allows you to build regular expressions in almost natural language.
 
 This library is a port of https://github.com/francisrstokes/super-expressive.
@@ -41,4 +44,5 @@ $myRegex = SuperExpressive::create()
 ```
 
 ## Installation
+
 nuget ...

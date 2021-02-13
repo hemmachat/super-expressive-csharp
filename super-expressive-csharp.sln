@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "super-expressive-csharp", "super-expressive-csharp\super-expressive-csharp.csproj", "{123C2C61-1F35-41C2-ADC0-11363C56F6B1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "super-expressive", "super-expressive\super-expressive.csproj", "{123C2C61-1F35-41C2-ADC0-11363C56F6B1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "super-expressive-csharp-test", "super-expressive-csharp-test\super-expressive-csharp-test.csproj", "{85984E76-11AA-4570-8129-D994B181C4C2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "super-expressive-test", "super-expressive-test\super-expressive-test.csproj", "{85984E76-11AA-4570-8129-D994B181C4C2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
