@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace SuperExpressive
 {
-    public class SuperExpressiveBuilder
+    public class SuperExpressive
     {
         StringBuilder pattern = new StringBuilder();
            
@@ -12,25 +12,25 @@ namespace SuperExpressive
             return pattern.ToString();
         }
 
-        public SuperExpressiveBuilder StartOfInput()
+        public SuperExpressive StartOfInput()
         {
             pattern.Append("^");
             return this;
         }
 
-        public SuperExpressiveBuilder EndOfInput()
+        public SuperExpressive EndOfInput()
         {
             pattern.Append("$");
             return this;
         }
 
-        public SuperExpressiveBuilder Capture()
+        public SuperExpressive Capture()
         {
             pattern.Append("(");
             return this;
         }
 
-        public SuperExpressiveBuilder End()
+        public SuperExpressive End()
         {
             pattern.Append(")");
             return this;

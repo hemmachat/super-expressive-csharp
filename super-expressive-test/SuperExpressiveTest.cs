@@ -4,16 +4,16 @@ using SuperExpressive;
 
 namespace SuperExpressive.Test
 {
-    public class SuperExpressiveBuilderTest
+    public class SuperExpressiveTest
     {
-        public SuperExpressiveBuilderTest () {
+        public SuperExpressiveTest () {
             
         }
 
         [Fact]
         public void Start_Of_Input()
         {
-            var builder = new SuperExpressiveBuilder();
+            var builder = new SuperExpressive();
             builder.StartOfInput();
 
             Assert.Equal("^", builder.ToRegexString());
@@ -22,7 +22,7 @@ namespace SuperExpressive.Test
         [Fact]
         public void End_Of_Input()
         {
-            var builder = new SuperExpressiveBuilder();
+            var builder = new SuperExpressive();
             builder.EndOfInput();
 
             Assert.Equal("$", builder.ToRegexString());
@@ -31,7 +31,7 @@ namespace SuperExpressive.Test
         [Fact]
         public void Capture()
         {
-            var builder = new SuperExpressiveBuilder();
+            var builder = new SuperExpressive();
             builder.Capture();
 
             Assert.Equal("(", builder.ToRegexString());
@@ -40,7 +40,7 @@ namespace SuperExpressive.Test
         [Fact]
         public void End()
         {
-            var builder = new SuperExpressiveBuilder();
+            var builder = new SuperExpressive();
             builder.End();
 
             Assert.Equal(")", builder.ToRegexString());
