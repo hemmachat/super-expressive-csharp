@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -6,179 +7,322 @@ namespace SuperExpressive
 {
     public class SuperExpressive
     {
-        StringBuilder pattern = new StringBuilder();
-           
+        private const string SpecialChars = @"\.^$|?*+()[]{}-";
+        private readonly StringBuilder _pattern = new StringBuilder();
+        private readonly Stack _stack = new Stack();
+
+        public static string ReplaceSpecialChars(char charToReplace)
+        {
+            if (!SpecialChars.Contains(charToReplace))
+            {
+                return charToReplace.ToString();
+            }
+            
+            var stringToReplace = charToReplace.ToString();
+            
+            return stringToReplace.Replace(stringToReplace, @"\" + charToReplace);
+        }
+        
         public string ToRegexString() 
         {
-            return pattern.ToString();
+            return _pattern.ToString();
         }
 
+        /// <summary>
+        /// Assert the start of input, or the start of a line when .lineByLine is used.
+        /// </summary>
+        /// <returns></returns>
         public SuperExpressive StartOfInput()
         {
-            pattern.Append("^");
+            _pattern.Append('^');
             return this;
         }
 
+        /// <summary>
+        /// Assert the end of input, or the end of a line when .lineByLine is used.
+        /// </summary>
+        /// <returns></returns>
         public SuperExpressive EndOfInput()
         {
-            pattern.Append("$");
+            _pattern.Append('$');
             return this;
         }
 
+        /// <summary>
+        /// Creates a capture group for the proceeding elements. Needs to be finalised with .end(). Can be later referenced with backreference(index).
+        /// </summary>
+        /// <returns></returns>
         public SuperExpressive Capture()
         {
-            pattern.Append("(");
+            _pattern.Append('(');
             return this;
         }
 
+        /// <summary>
+        /// Creates a non-capturing group of the proceeding elements. Needs to be finalised with .end().
+        /// </summary>
+        /// <returns></returns>
+        public SuperExpressive Group()
+        {
+            return this;
+        }
+        
+        /// <summary>
+        /// Signifies the end of a SuperExpressive grouping, such as .anyOf, .group, or .capture.
+        /// </summary>
+        /// <returns></returns>
         public SuperExpressive End()
         {
-            pattern.Append(")");
+            _pattern.Append(')');
             return this;
         }
 
+        /// <summary>
+        /// Matches a choice between specified elements. Needs to be finalised with .end().
+        /// </summary>
+        /// <returns></returns>
+        public SuperExpressive AnyOf()
+        {
+            _pattern.Append('(');
+            return this;
+        }
+
+        /// <summary>
+        /// Matches any single character.
+        /// </summary>
+        /// <returns></returns>
         public SuperExpressive AnyChar()
         {
-            pattern.Append(".");
+            _pattern.Append('.');
             return this;
         }
 
+        /// <summary>
+        /// Matches any whitespace character, including the special whitespace characters: \r\n\t\f\v.
+        /// </summary>
+        /// <returns></returns>
         public SuperExpressive WhiteSpaceChar()
         {
-            pattern.Append(@"\s");
+            _pattern.Append(@"\s");
             return this;
         }     
 
+        /// <summary>
+        /// Matches any non-whitespace character, excluding also the special whitespace characters: \r\n\t\f\v.
+        /// </summary>
+        /// <returns></returns>
         public SuperExpressive NonWhiteSpaceChar()
         {
-            pattern.Append(@"\S");
+            _pattern.Append(@"\S");
             return this;
         }   
 
+        /// <summary>
+        /// Matches any digit from 0-9.
+        /// </summary>
+        /// <returns></returns>
         public SuperExpressive Digit()
         {
-            pattern.Append(@"\d");
+            _pattern.Append(@"\d");
             return this;
         }     
 
+        /// <summary>
+        /// Matches any non-digit.
+        /// </summary>
+        /// <returns></returns>
         public SuperExpressive NonDigit()
         {
-            pattern.Append(@"\D");
+            _pattern.Append(@"\D");
             return this;
         }       
 
+        /// <summary>
+        /// Matches any alpha-numeric (a-z, A-Z, 0-9) characters, as well as _.
+        /// </summary>
+        /// <returns></returns>
         public SuperExpressive Word()
         {
-            pattern.Append(@"\w");
+            _pattern.Append(@"\w");
             return this;
         }     
 
+        /// <summary>
+        /// Matches any non alpha-numeric (a-z, A-Z, 0-9) characters, excluding _ as well.
+        /// </summary>
+        /// <returns></returns>
         public SuperExpressive NonWord()
         {
-            pattern.Append(@"\W");
+            _pattern.Append(@"\W");
             return this;
         }     
 
+        /// <summary>
+        /// Matches (without consuming any characters) immediately between a character matched by .word and a character not matched by .word (in either order).
+        /// </summary>
+        /// <returns></returns>
         public SuperExpressive WordBoundary()
         {
-            pattern.Append(@"\b");
+            _pattern.Append(@"\b");
             return this;
         } 
 
+        /// <summary>
+        /// Matches (without consuming any characters) at the position between two characters matched by .word.
+        /// </summary>
+        /// <returns></returns>
         public SuperExpressive NonWordBoundary()
         {
-            pattern.Append(@"\B");
+            _pattern.Append(@"\B");
             return this;
         }   
 
+        /// <summary>
+        /// Matches a \n character.
+        /// </summary>
+        /// <returns></returns>
         public SuperExpressive NewLine()
         {
-            pattern.Append(@"\n");
+            _pattern.Append(@"\n");
             return this;
         }     
 
+        /// <summary>
+        /// Matches a \r character.
+        /// </summary>
+        /// <returns></returns>
         public SuperExpressive CarriageReturn()
         {
-            pattern.Append(@"\r");
+            _pattern.Append(@"\r");
             return this;
         }  
 
+        /// <summary>
+        /// Matches a \t character.
+        /// </summary>
+        /// <returns></returns>
         public SuperExpressive Tab()
         {
-            pattern.Append(@"\t");
+            _pattern.Append(@"\t");
             return this;
         }   
 
+        /// <summary>
+        /// Matches a \u0000 character (ASCII 0).
+        /// </summary>
+        /// <returns></returns>
         public SuperExpressive NullByte()
         {
-            pattern.Append(@"\0");
+            _pattern.Append(@"\0");
             return this;
         }     
 
+        /// <summary>
+        /// Matches the exact string.
+        /// </summary>
+        /// <param name="stringToMatch">String to match</param>
+        /// <returns></returns>
         public SuperExpressive String(string stringToMatch) 
         {
-            pattern.Append(stringToMatch);
+            _pattern.Append(stringToMatch);
             return this;
         }   
 
         public SuperExpressive Char(char charToMatch)
         {
-            pattern.Append(charToMatch);
+            _pattern.Append(ReplaceSpecialChars(charToMatch));
             return this;
         }     
 
         public SuperExpressive Range(char beginChar, char endChar)
         {
-            pattern.Append($"{beginChar}-{endChar}");
+            _pattern.Append($"{beginChar}-{endChar}");
             return this;
         }
 
+        /// <summary>
+        /// Assert that the proceeding element may or may not be matched.
+        /// </summary>
+        /// <returns></returns>
         public SuperExpressive Optional()
         {
-            pattern.Append("?");
+            _pattern.Append("?");
             return this;
         }               
 
+        /// <summary>
+        /// Assert that the proceeding element may not be matched, or may be matched multiple times.
+        /// </summary>
+        /// <returns></returns>
         public SuperExpressive ZeroOrMore()
         {
-            pattern.Append("*");
+            _pattern.Append("*");
             return this;
         }               
 
+        /// <summary>
+        /// Assert that the proceeding element may be matched once, or may be matched multiple times.
+        /// </summary>
+        /// <returns></returns>
         public SuperExpressive OneOrMore()
         {
-            pattern.Append("+");
+            _pattern.Append("+");
             return this;
         }            
 
+        /// <summary>
+        /// Assert that the proceeding element may not be matched, or may be matched multiple times, but as few times as possible.
+        /// </summary>
+        /// <returns></returns>
         public SuperExpressive OneOrMoreLazy()
         {
-            pattern.Append("+?");
+            _pattern.Append("+?");
             return this;
         }
 
-        public SuperExpressive Exactly(int numberToMatch)
+        /// <summary>
+        /// Assert that the proceeding element will be matched exactly n times.
+        /// </summary>
+        /// <param name="times">Number of times to match</param>
+        /// <returns></returns>
+        public SuperExpressive Exactly(int times)
         {
-            pattern.Append($"{{{numberToMatch}}}");
+            _pattern.Append($"{{{times}}}");
             return this;
         }
 
-        public SuperExpressive AtLeast(int numberToMatch)
+        /// <summary>
+        /// Assert that the proceeding element will be matched at least n times.
+        /// </summary>
+        /// <param name="times">Number of times to match</param>
+        /// <returns></returns>
+        public SuperExpressive AtLeast(int times)
         {
-            pattern.Append($"{{{numberToMatch},}}");
+            _pattern.Append($"{{{times},}}");
             return this;
         }     
-
-
+        
+        /// <summary>
+        /// Assert that the proceeding element will be matched somewhere between x and y times.
+        /// </summary>
+        /// <param name="numberFrom">Minimum number of times to match</param>
+        /// <param name="numberTo">Maximum number of times to match</param>
+        /// <returns></returns>
         public SuperExpressive Between(int numberFrom, int numberTo)
         {
-            pattern.Append($"{{{numberFrom},{numberTo}}}");
+            _pattern.Append($"{{{numberFrom},{numberTo}}}");
             return this;
         }   
 
+        /// <summary>
+        /// Assert that the proceeding element will be matched somewhere between x and y times, but as few times as possible.
+        /// </summary>
+        /// <param name="numberFrom">Minimum number of times to match</param>
+        /// <param name="numberTo">Maximum number of times to match</param>
+        /// <returns></returns>
         public SuperExpressive BetweenLazy(int numberFrom, int numberTo)
         {
-            pattern.Append($"{{{numberFrom},{numberTo}}}?");
+            _pattern.Append($"{{{numberFrom},{numberTo}}}?");
             return this;
         }                  
     }

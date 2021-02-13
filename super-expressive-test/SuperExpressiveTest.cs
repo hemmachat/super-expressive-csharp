@@ -12,6 +12,30 @@ namespace SuperExpressive.Test
         }
 
         [Fact]
+        public void Replace_Special_Chars_Dot()
+        {
+            var newText = SuperExpressive.ReplaceSpecialChars('.');
+            
+            Assert.Equal(@"\.", newText);
+        }
+        
+        [Fact]
+        public void Replace_Special_Chars_Back_Slash()
+        {
+            var newText = SuperExpressive.ReplaceSpecialChars('\\');
+            
+            Assert.Equal(@"\\", newText);
+        }
+        
+        [Fact]
+        public void Replace_Special_Chars_Back_Pipe()
+        {
+            var newText = SuperExpressive.ReplaceSpecialChars('|');
+            
+            Assert.Equal(@"\|", newText);
+        }
+        
+        [Fact]
         public void Empty() 
         {
             var builder = new SuperExpressive();
@@ -201,6 +225,15 @@ namespace SuperExpressive.Test
         }  
 
         [Fact]
+        public void Char_Dot() 
+        {
+            var builder = new SuperExpressive();
+            builder.Char('.');
+
+            Assert.Equal(@"\.", builder.ToRegexString());
+        }         
+
+        [Fact]
         public void Range_Alphabet() 
         {
             var builder = new SuperExpressive();
@@ -288,6 +321,6 @@ namespace SuperExpressive.Test
             builder.BetweenLazy(4,6);
 
             Assert.Equal("{4,6}?", builder.ToRegexString());
-        }                                                                        
+        }
     }
 }
